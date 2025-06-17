@@ -1,5 +1,6 @@
 package com.example.miniapp
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -42,29 +43,34 @@ class CalculatorActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun CalculatorScreen() {
     val buttonModifier = Modifier
         .padding(4.dp)
 
-    val screen = remember {
+    var screen by remember {
         mutableStateOf("")
     }
 
-    val math1 = remember {
-        mutableIntStateOf(0)
-    }
-
-    val math2 = remember {
-        mutableIntStateOf(0)
-    }
-
-    val result = remember {
-        mutableIntStateOf(0)
-    }
-
-    val operator = remember {
+    var math1 by remember {
         mutableStateOf("")
+    }
+
+    var math2 by remember {
+        mutableStateOf("")
+    }
+
+    var result by remember {
+        mutableStateOf(0.0)
+    }
+
+    var operator by remember {
+        mutableStateOf("")
+    }
+
+    var checkOperator by remember {
+        mutableStateOf(false)
     }
 
     Column(
@@ -74,7 +80,7 @@ fun CalculatorScreen() {
             .padding(16.dp)
     ) {
         Text(
-            text = screen.value,
+            text = screen,
             color = Color.White,
             fontSize = 48.sp,
             modifier = Modifier
@@ -89,7 +95,7 @@ fun CalculatorScreen() {
             listOf("7", "8", "9", "×"),
             listOf("4", "5", "6", "-"),
             listOf("1", "2", "3", "+"),
-            listOf("0", ".", "=", "÷")
+            listOf("0", "AC", "=", "÷")
         )
 
         for (row in buttons) {
@@ -102,33 +108,59 @@ fun CalculatorScreen() {
                     Button(
                         onClick = {
                             when (btn) {
-                                "+" -> operator.value = "+"
-                                "-" -> operator.value = "-"
-                                "×" -> operator.value = "*"
-                                "÷" -> operator.value = "/"
-                                "=" ->
-                                {
-                                    when (operator.value) {
-                                        "+" -> result.intValue = math1.intValue + math2.intValue
-                                        "-" -> result.intValue = math1.intValue - math2.intValue
-                                        "*"-> result.intValue = math1.intValue * math2.intValue
-                                        "/" -> result.intValue = math1.intValue / math2.intValue
-                                    }
-                                    screen.value = ""
-                                    operator.value = ""
-                                    math1.intValue = 0
-                                    math2.intValue = 0
+                                "+" -> {
+                                    operator = "+"
+                                    checkOperator = true
                                 }
+
+                                "-" -> {
+                                    operator = "-"
+                                    checkOperator = true
+                                }
+
+                                "×" -> {
+                                    operator = "*"
+                                    checkOperator = true
+                                }
+
+                                "÷" -> {
+                                    operator = "/"
+                                    checkOperator = true
+                                }
+
+                                "=" -> {
+                                    result = when (operator) {
+                                        "+" -> math1.toDouble() + math2.toDouble()
+                                        "-" -> math1.toDouble() - math2.toDouble()
+                                        "*" -> math1.toDouble() * math2.toDouble()
+                                        "/" -> math1.toDouble() / math2.toDouble()
+                                        else -> 0.0
+                                    }
+                                    screen = if(result % 1.0 == 0.0) result.toInt().toString() else {
+                                        String.format("%.2f", result)
+                                    }
+                                    operator = ""
+                                    math1 = ""
+                                    math2 = ""
+                                }
+
+                                "AC" -> {
+                                    screen = ""
+                                    operator = ""
+                                    math1 = ""
+                                    math2 = ""
+                                }
+
                                 else -> {
-                                    if (math1.intValue == 0) {
-                                        math1.intValue += btn.toInt()
-                                    } else if (math2.intValue == 0) {
-                                        math2.intValue += btn.toInt()
+                                    if (!checkOperator) {
+                                        math1 += btn
+                                    } else {
+                                        math2 += btn
                                     }
                                 }
                             }
-                            if(btn != "=") {
-                                screen.value += " $btn"
+                            if (btn !in setOf("=", "AC")) {
+                                screen += btn
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = getButtonColor(btn)),
@@ -149,16 +181,14 @@ fun CalculatorScreen() {
                 }
             }
         }
-//        if (result.intValue != 0) {
-            Text(
-                "Result: ${result.intValue}",
-                color = Color.White,
-                fontSize = 30.sp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp)
-            )
-//        }
+        Text(
+            "Result: ${result}",
+            color = Color.White,
+            fontSize = 30.sp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp)
+        )
         Button(
             onClick = {}
         ) {
