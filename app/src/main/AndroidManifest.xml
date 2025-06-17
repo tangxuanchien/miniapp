@@ -24,6 +24,7 @@
             </intent-filter>
         </activity>
         <activity android:name="com.example.todolist.IndexActivity" />
+        <activity android:name=".CalculatorActivity" />
     </application>
 
 </manifest>

@@ -99,6 +99,16 @@ fun LoginView() {
         ) {
             Text("Login")
         }
+
+        Button(
+            onClick = {
+                val intent = Intent(context, CalculatorActivity::class.java)
+                context.startActivity(intent)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Go to calculator")
+        }
     }
 }
 
